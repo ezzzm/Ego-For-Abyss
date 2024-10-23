@@ -1,0 +1,4 @@
+repository "EGOcloud@tj_dimmmmond@cloud.cn"
+  path "/"
+    br "/main"
+    co "/main"
