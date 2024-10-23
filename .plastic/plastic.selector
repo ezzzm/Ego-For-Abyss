@@ -1,0 +1,4 @@
+repository "Ego For Abyss Project@tj_dimmmmond@cloud.cn"
+  path "/"
+    br "/main"
+    co "/main"
