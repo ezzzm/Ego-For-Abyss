@@ -38,6 +38,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private bool IsAttacking;
     [SerializeField] private int ComboCounter;
 
+    private int facingDir = 1;
+    private bool facingRight = true;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -54,7 +57,8 @@ public class PlayerController : MonoBehaviour
         HandleState();     // 处理状态切换
         CheckGround();     // 检测角色是否在地面
         UpdateAnimator();  // 更新动画状态
-        Dash();            // 处理冲刺逻辑
+        Dash();            // 处理冲刺逻辑      
+        FlipController();
     }
 
     public void AttackOver()  // 动画结束后调用，用于重置攻击状态
@@ -67,7 +71,7 @@ public class PlayerController : MonoBehaviour
     {
         moveInput = Input.GetAxisRaw("Horizontal");  // 获取水平移动输入
 
-        if (dashTime > 0)
+        if (dashTime > 0 )
         {
             rb.velocity = new Vector2(moveInput * dashSpeed, rb.velocity.y);
         }
@@ -85,7 +89,7 @@ public class PlayerController : MonoBehaviour
             ComboCounter++;  // 连击计数递增
             if(ComboCounter == 4)
             {
-                ComboCounter = 0;   
+                ComboCounter = 1;   
             }
         }
 
@@ -177,9 +181,22 @@ public class PlayerController : MonoBehaviour
     void Dash()
     {
         dashTime -= Time.deltaTime;
-        if (Input.GetKeyDown(KeyCode.LeftShift))
+        if (Input.GetKeyDown(KeyCode.LeftShift)&&dashTime<3)
         {
             dashTime = dashDuration;
         }
+    }
+    private void Flip()
+    {
+        facingDir = facingDir - 1;
+        facingRight = !facingRight;
+        transform.Rotate(0, 180, 0);
+    }
+    private void FlipController()
+    {
+        if (rb.velocity.x > 0 && !facingRight)
+            Flip();
+        else if (rb.velocity.x < 0 && facingRight)
+            Flip(); 
     }
 }
