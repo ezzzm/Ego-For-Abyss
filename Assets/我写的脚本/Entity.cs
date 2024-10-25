@@ -4,14 +4,17 @@ using UnityEngine;
 
 public class NewBehaviourScript : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    protected Animator Anima;
+    protected Rigidbody2D rb;
+
+    protected virtual void Start()
     {
-        
+        rb = GetComponent<Rigidbody2D>();
+        Anima = GetComponent<Animator>();   
     }
 
     // Update is called once per frame
-    void Update()
+    protected virtual void Update()
     {
         
     }
