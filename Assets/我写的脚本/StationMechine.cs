@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 
 public enum CharacterState
@@ -8,15 +9,12 @@ public enum CharacterState
     Attacking, // 攻击
 }
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : Entity
 {
     public CharacterState currentState = CharacterState.Idle;  // 当前角色状态
     public float moveSpeed = 5f;          // 移动速度
     public float jumpForce = 7f;          // 跳跃力
     public float attackDuration = 0.3f;   // 攻击时长
-
-    private Rigidbody2D rb;               // 刚体组件
-    private bool isGrounded;              // 是否在地面上
     private float attackTimeCounter;      // 攻击计时器
     private float moveInput;              // 移动输入
 
@@ -24,12 +22,9 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;         // 地面检测的位置
     public float groundCheckRadius = 0.2f; // 地面检测半径
     public LayerMask groundLayer;         // 表示地面的图层    
-    public Animator Anima;                // 动画控制器
 
     private bool IsMoving;                // 是否正在移动
-    [Header("Collision info")]
-    [SerializeField] private LayerMask whatIsGround;
-    [SerializeField] private float groundCheckDistance;
+
     [Header("Dash info")]
     [SerializeField] private float dashDuration;
     [SerializeField] private float dashTime;
@@ -37,25 +32,35 @@ public class PlayerController : MonoBehaviour
     [Header("Attack info")]
     [SerializeField] private bool IsAttacking;
     [SerializeField] private int ComboCounter;
+    public int health = 50;
 
-    private int facingDir = 1;
-    private bool facingRight = true;
-
-    void Start()
+    public void TakeDamage(int damage)
     {
-        rb = GetComponent<Rigidbody2D>();
-        Anima = GetComponentInChildren<Animator>(); // 获取角色的动画
-        if (groundCheck == null)
+        health -= damage;
+        Debug.Log("Enemy took " + damage + " damage.");
+
+        if (health <= 0)
         {
-            Debug.LogError("GroundCheck Transform is not assigned in the Inspector!");
+            Die();
         }
     }
 
-    void Update()
+    void Die()
     {
+        // 播放死亡动画、销毁敌人等逻辑
+        Destroy(gameObject);
+    }
+
+    protected override void Start()
+    {
+       base.Start();
+    }
+
+    protected override void Update()
+    {
+        base.Update();
         HandleInput();     // 处理输入
         HandleState();     // 处理状态切换
-        CheckGround();     // 检测角色是否在地面
         UpdateAnimator();  // 更新动画状态
         Dash();            // 处理冲刺逻辑      
         FlipController();
@@ -132,13 +137,6 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-    // 检测角色是否在地面
-    void CheckGround()
-    {
-        // 使用 Raycast 检测地面，并更新 isGrounded 状态
-        isGrounded = Physics2D.Raycast(transform.position, Vector2.down, groundCheckDistance, whatIsGround);
-    }
-
     // 处理跳跃逻辑
     void Jump()
     {
@@ -162,12 +160,6 @@ public class PlayerController : MonoBehaviour
     }
 
     // 用于显示地面检测的可视化帮助（方便调试）
-    void OnDrawGizmosSelected()
-    {
-        Gizmos.DrawLine(transform.position, new Vector3(transform.position.x, transform.position.y - groundCheckDistance));
-    }
-
-    // 用于显示地面检测的可视化帮助（方便调试）
     void OnDrawGizmos()
     {
         if (groundCheck != null)
@@ -185,12 +177,6 @@ public class PlayerController : MonoBehaviour
         {
             dashTime = dashDuration;
         }
-    }
-    private void Flip()
-    {
-        facingDir = facingDir - 1;
-        facingRight = !facingRight;
-        transform.Rotate(0, 180, 0);
     }
     private void FlipController()
     {
